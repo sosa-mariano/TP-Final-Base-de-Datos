@@ -180,9 +180,9 @@ VAR BASE RELATION modificacionCondena (
 
 ENUM T_Nacionalidad (Argentino, Paraguayo, Uruguayo, Brasilero, Chileno, Boliviano)
 
-ENUM T_EstadoCivil (Soltero Casado, Divorciados, Viudo)
+ENUM T_EstadoCivil (Soltero, Casado, Divorciado, Viudo)
 
-ENUM T_NivelEducacion (SinEscolodarizar, Inicial, PrimarioIncompleto, PrimarioCompleto, TerciarioIncompleto, TerciarioCompleto, UniversitarionIncompleto, UniversitarioCompleto)
+ENUM T_NivelEducacion (SinEscolarizar, Inicial, PrimarioIncompleto, PrimarioCompleto, SecundarioIncompleto, SecundarioCompleto, TerciarioIncompleto, TerciarioCompleto, UniversitarionIncompleto, UniversitarioCompleto)
 
 ENUM T_Parentesco (Madre, Padre, Hermano, Hermana, Hijo, Hija)
 
