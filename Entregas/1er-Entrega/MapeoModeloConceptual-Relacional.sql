@@ -127,23 +127,6 @@ VAR BASE RELATION unidadCarcelaria (
   UNIQUE (id_domicilio),
   FOREIGN KEY (id_domicilio) REFERENCES domicilio )
 
-VAR BASE RELATION condena (
-  id_condena: INTEGER,
-  modalidad: T_Modalidad NOT NULL,
-  duracion_meses: SMALLINT NOT NULL,
-  fecha_inicio: DATE NOT NULL,
-  fecha_fin: DATE NOT NULL,
-  activa: BOOLEAN NOT NULL,
-  fecha_baja: DATE,
-  motivo_baja: VARCHAR(255),
-  id_acusado: INTEGER NOT NULL,
-  id_unidad: INTEGER,
-  id_domicilio: INTEGER,
-  PRIMARY KEY (id_condena),
-  FOREIGN KEY (id_acusado) REFERENCES acusado,
-  FOREIGN KEY (id_unidad) REFERENCES unidadCarcelaria,
-  FOREIGN KEY (id_domicilio) REFERENCES domicilio
-)
 
 VAR BASE RELATION condena (
   id_condena: INTEGER,
