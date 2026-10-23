@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net">
   <diagram id="justicia" name="Sistema de justicia - Modelo conceptual">
-    <mxGraphModel dx="1712" dy="605" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1700" math="0" shadow="0">
+    <mxGraphModel dx="3668" dy="1296" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1700" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -734,7 +734,7 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="TP3bByV575wmhahlAQLs-145" parent="1" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=1;fillColor=#f5f5f5;strokeColor=#666666;spacing=8;fontSize=11;" value="&lt;b&gt;Leyenda&lt;/b&gt;&lt;br&gt;{PK} clave primaria · {NN} not null · {NULL} acepta nulos&lt;br&gt;numero, piso y departamento son VARCHAR para aceptar valores como S/N (sin número)&lt;br&gt;Juez y Secretario: tablas de rol de Persona (sus claves se definen en el modelo relacional)&lt;br&gt;Estado vigente del acusado = último registro de HistorialEstadoAcusado (desempate por id_historial)&lt;br&gt;Condena activa = fecha_baja nula · La Secretaría de la causa se guarda en la causa (no cambia si el secretario cambia de Secretaría)&lt;br&gt;fecha_resolucion de CausaJudicial: se completa cuando todos sus acusados quedan resueltos" vertex="1">
-          <mxGeometry height="130" width="760" x="270" y="1510" as="geometry" />
+          <mxGeometry height="130" width="760" x="160" y="1420" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
