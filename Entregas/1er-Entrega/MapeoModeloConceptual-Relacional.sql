@@ -165,7 +165,7 @@ ENUM T_Nacionalidad (Argentino, Paraguayo, Uruguayo, Brasilero, Chileno, Bolivia
 
 ENUM T_EstadoCivil (Soltero, Casado, Divorciado, Viudo)
 
-ENUM T_NivelEducacion (SinEscolarizar, Inicial, PrimarioIncompleto, PrimarioCompleto, SecundarioIncompleto, SecundarioCompleto, TerciarioIncompleto, TerciarioCompleto, UniversitarionIncompleto, UniversitarioCompleto)
+ENUM T_NivelEducacion (SinEscolarizar, Inicial, PrimarioIncompleto, PrimarioCompleto, SecundarioIncompleto, SecundarioCompleto, TerciarioIncompleto, TerciarioCompleto, UniversitarioIncompleto, UniversitarioCompleto)
 
 ENUM T_Parentesco (Madre, Padre, Hermano, Hermana, Hijo, Hija)
 
