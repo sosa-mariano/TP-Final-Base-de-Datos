@@ -3,9 +3,9 @@
 ![Estado](https://img.shields.io/badge/estado-en%20desarrollo-yellow)
 ![Base de datos](https://img.shields.io/badge/PostgreSQL-objetivo-336791?logo=postgresql&logoColor=white)
 ![Modelado](https://img.shields.io/badge/modelado-draw.io-F08705?logo=diagramsdotnet&logoColor=white)
-![Entregas](https://img.shields.io/badge/entregas-2%20de%203-blue)
+![Entregas](https://img.shields.io/badge/entregas-3%20de%203-blue)
 
-Diseño e implementación de una base de datos para la administración de **causas judiciales y unidades carcelarias**. El trabajo cubre el ciclo completo de creación de una base de datos: reglas de negocio, modelo lógico y relacional, diccionario de datos, triggers, y la posterior implementación en PostgreSQL con vistas, funciones, usuarios y pruebas.
+Diseño e implementación de una base de datos para la administración de **causas judiciales y unidades carcelarias**. El trabajo cubre el ciclo completo de creación de una base de datos: reglas de negocio, modelo lógico y relacional, diccionario de datos, triggers, restricciones, y la posterior implementación en PostgreSQL con vistas, funciones, procedimientos, usuarios y pruebas.
 
 > **Cátedra:** Base de Datos · **Carrera:** Licenciatura en Sistemas de Información
 > **Institución:** Facultad de Ciencia y Tecnología, UADER · **Ciclo lectivo:** 2026
@@ -15,15 +15,13 @@ Diseño e implementación de una base de datos para la administración de **caus
 ## Tabla de contenidos
 
 1. [Contexto y consigna](#contexto-y-consigna)
-2. [Estado del proyecto](#estado-del-proyecto)
-3. [Estructura del repositorio](#estructura-del-repositorio)
-4. [Modelo de datos](#modelo-de-datos)
-5. [Diccionario de datos](#diccionario-de-datos)
-6. [Triggers](#triggers)
-7. [Consultas a resolver](#consultas-a-resolver)
-8. [Hoja de ruta](#hoja-de-ruta)
-9. [Tecnologías](#tecnologías)
-10. [Equipo y cátedra](#equipo-y-cátedra)
+2. [Estructura del repositorio](#estructura-del-repositorio)
+3. [Modelo de datos](#modelo-de-datos)
+4. [Diccionario de datos](#diccionario-de-datos)
+5. [Alcance del proyecto](#alcance-del-proyecto)
+6. [Consultas a resolver](#consultas-a-resolver)
+7. [Tecnologías](#tecnologías)
+8. [Equipo y cátedra](#equipo-y-cátedra)
 
 ---
 
@@ -48,29 +46,20 @@ El sistema de justicia del país necesita un sistema administrativo para gestion
 
 ---
 
-## Estado del proyecto
-
-| Entrega | Contenido | Estado |
-|---|---|---|
-| **1ª entrega** | Modelo lógico y modelo relacional en 3FN | ✅ Entregada |
-| **2ª entrega** | Diccionario de datos y triggers | ✅ Entregada |
-| **3ª entrega** | Plan de la sección 3: consultas, vistas, restricciones, triggers y SP/funciones, usuarios y permisos, poblado y testing | ⏳ En proceso |
-| **Implementación** | Scripts de creación, carga, vistas, funciones, usuarios y pruebas en PostgreSQL | ⏳ En proceso |
-
----
-
 ## Estructura del repositorio
 
 ```text
 TP-Final-Base-de-Datos/
 ├── Entregas/
 │   ├── 1er-Entrega/
-│   │   ├── DiagramaClases_BDD_TPFINAL.drawio        # Modelo lógico (diagrama de clases)
-│   │   ├── DiagramaClases_BDD_TPFINAL.png           # Exportación del diagrama
-│   │   └── MapeoModeloConceptual-Relacional.sql     # Modelo relacional (conceptual)
-│   └── 2da-Entrega/
-│       ├── BDDTPFinal-Diccionario-Datos.xlsx        # Diccionario de datos
-│       └── Triggers Documento.pdf                   # Documentación de triggers
+│   │   ├── DiagramaClases_BDD_TPFINAL.drawio     # Modelo lógico (diagrama de clases)
+│   │   ├── DiagramaClases_BDD_TPFINAL.png        # Exportación del diagrama
+│   │   └── MapeoModeloConceptual-Relacional.sql  # Modelo relacional (conceptual)
+│   ├── 2da-Entrega/
+│   │   ├── BDDTPFinal-Diccionario-Datos.v2.xlsx  # Diccionario de datos (v2)
+│   │   └── Triggers Documento.v2.pdf             # Documentación de triggers (v2)
+│   └── 3er-entrega/
+│       └── Plan de Implementación de la Base de Datos del Sistema de Justicia.v2.pdf
 └── README.md
 ```
 
@@ -88,7 +77,7 @@ Diagrama de clases con claves primarias, dominios, restricciones de cada atribut
 
 El modelo relacional está normalizado hasta la **3FN** y se encuentra en [`MapeoModeloConceptual-Relacional.sql`](Entregas/1er-Entrega/MapeoModeloConceptual-Relacional.sql).
 
-> **Nota:** este archivo es una representación **conceptual** del esquema relacional (no es un script ejecutable en PostgreSQL). El script de creación se incluirá en la etapa de implementación.
+> **Nota:** este archivo es una representación **conceptual** del esquema relacional (no es un script ejecutable en PostgreSQL). El script ejecutable de creación se desarrolla en la etapa de implementación.
 
 El esquema se compone de **14 tablas** y **7 dominios enumerados**, organizados en cuatro áreas:
 
@@ -107,41 +96,60 @@ El esquema se compone de **14 tablas** y **7 dominios enumerados**, organizados 
 - **Baja lógica de condenas:** una condena nunca se elimina; se da de baja con `fecha_baja` y `motivo_baja`.
 - **Modificaciones inmutables:** cada extensión, reducción o traslado se registra en `modificacionCondena` junto con su razón, y no puede editarse ni borrarse.
 - **Destino de la condena:** según la modalidad, la condena referencia una `unidadCarcelaria` o el domicilio principal de la persona.
+- **Reglas en CHECK o en trigger:** las reglas que dependen solo de una fila se resuelven con restricciones `CHECK`; las que consultan otras tablas o el historial, con triggers.
+- **Estados finales alternativos:** Condenado y Sobreseído no se encadenan dentro de una misma causa. La consulta E se interpreta como personas condenadas en una causa y sobreseídas en otra.
 
 ---
 
 ## Diccionario de datos
 
-El archivo [`BDDTPFinal-Diccionario-Datos.xlsx`](Entregas/2da-Entrega/BDDTPFinal-Diccionario-Datos.xlsx) sigue el formato provisto por la cátedra e incluye, para cada tabla:
+El archivo [`BDDTPFinal-Diccionario-Datos.v2.xlsx`](Entregas/2da-Entrega/BDDTPFinal-Diccionario-Datos.v2.xlsx) sigue el formato provisto por la cátedra e incluye, para cada tabla:
 
 - Descripción de la tabla y de cada atributo.
-- Dominio, rango, restricciones (`NOT NULL`, `UNIQUE`), valor por defecto, clave primaria y claves foráneas.
+- Dominio, rango, restricciones (`NOT NULL`, `UNIQUE`, `CHECK`), valor por defecto, clave primaria y claves foráneas.
 - Triggers asociados, con su descripción y operaciones vinculadas.
 
 También define los **7 dominios enumerados**: `T_Nacionalidad`, `T_EstadoCivil`, `T_NivelEducacion`, `T_Parentesco`, `T_EstadoAcusado`, `T_Modalidad` y `T_TipoModificacion`.
 
 ---
 
-## Triggers
+## Alcance del proyecto
 
-Se diseñaron **8 triggers** (la consigna exige un mínimo de 4) para garantizar reglas de negocio que las restricciones declarativas no pueden expresar. El detalle de cada uno, con su descripción, justificación y tabla de retornos, está en [`Triggers Documento.pdf`](Entregas/2da-Entrega/Triggers%20Documento.pdf).
+La implementación en PostgreSQL comprende los siguientes componentes:
 
-| Trigger | Tabla | Operación | Regla que garantiza |
-|---|---|---|---|
-| `trg_validar_transicion_estado` | `historialEstadoAcusado` | BEFORE INSERT OR UPDATE OR DELETE | El acusado avanza Indagado → Procesado → Condenado/Sobreseído, sin saltos ni retrocesos; el historial es inmodificable. |
-| `trg_cerrar_resolucion` | `historialEstadoAcusado` | AFTER INSERT | Completa la fecha de resolución del acusado y, cuando todos están resueltos, la de la causa. |
-| `trg_validar_alta_condena` | `condena` | BEFORE INSERT | El acusado debe estar Condenado; modalidad, destino, duración y fechas deben ser coherentes. |
-| `trg_validar_modificacion_condena` | `modificacionCondena` | BEFORE INSERT OR UPDATE OR DELETE | Cada extensión, reducción o traslado exige los datos propios de su tipo y es coherente con la condena vigente. |
-| `trg_proteger_condena` | `condena` | BEFORE UPDATE OR DELETE | Las condenas no se eliminan; el único cambio permitido es su baja. |
-| `trg_validar_duenio_domicilio` | `duenioDomicilio` | BEFORE INSERT OR UPDATE OR DELETE | La titularidad es una línea de tiempo sin superposiciones ni dos dueños actuales. |
-| `trg_validar_familiar` | `familiar` | BEFORE INSERT OR UPDATE | Sin autorrelación, con parentesco inverso compatible y fechas de nacimiento coherentes. |
-| `trg_validar_acusado` | `acusado` | BEFORE INSERT OR UPDATE y AFTER INSERT | El juez o secretario de la causa no puede ser acusado en ella; no se agregan acusados a causas resueltas; registra el estado inicial Indagado. |
+| Componente | Cantidad | Qué incluye |
+|---|---|---|
+| Tablas | 14 | Claves primarias, claves foráneas y restricciones `NOT NULL` y `UNIQUE`, agrupadas en cuatro áreas: personas y domicilios, estructura judicial, proceso judicial y ejecución penal. |
+| Dominios enumerados | 7 | Nacionalidad, estado civil, nivel educativo, parentesco, estado del acusado, modalidad de la condena y tipo de modificación. |
+| Restricciones `CHECK` | 10 | Reglas de una sola fila: duración positiva, fecha de fin coherente, baja completa, destino según la modalidad, razón no vacía, familiar distinto de la persona y período de titularidad válido. |
+| Triggers | 8 | Reglas que consultan otras tablas o el historial: `trg_validar_transicion_estado`, `trg_cerrar_resolucion`, `trg_validar_alta_condena`, `trg_validar_modificacion_condena`, `trg_proteger_condena`, `trg_validar_duenio_domicilio`, `trg_validar_familiar` y `trg_validar_acusado`. |
+| Vistas | 4 | `v_condena_vigente`, `v_causas_con_familiares`, `v_personas_condenadas_y_sobreseidas` y `v_condenas_vencidas_con_traslados`. |
+| Funciones | 4 | `fn_causas_por_estado`, `fn_condenados_con_modificaciones`, `fn_cantidad_prision_domiciliaria` y `fn_calcular_edad`. |
+| Procedimientos | 1 | `sp_registrar_condena`, que registra una condena aplicando sus validaciones. |
+| Usuarios y roles | 3 usuarios, 3 roles | Administrador, operador y consulta, con permisos diferenciados sobre tablas, vistas y funciones. |
+| Datos de prueba | 324 filas | Cargadas en las 14 tablas, con casos diseñados para que cada consulta tenga un resultado esperado. |
+| Pruebas | 1 script | Verifican consultas, restricciones, triggers, vistas, funciones, procedimiento y permisos. |
+
+### Scripts de implementación
+
+| Orden | Script | Contenido |
+|---|---|---|
+| 00 | `00_reset.sql` | Vacía la base para volver a cargar datos y repetir pruebas. |
+| 01 | `01_crear_bd.sql` | Esquema, tipos enumerados, tablas y restricciones. |
+| 02 | `02_triggers.sql` | Los 8 triggers. |
+| 03 | `03_carga_datos.sql` | Carga de datos de las 14 tablas, en una única transacción. |
+| 04 | `04_vistas.sql` | Las 4 vistas. |
+| 05 | `05_funciones_procedimientos.sql` | Las 4 funciones y el procedimiento. |
+| 06 | `06_usuarios_permisos.sql` | Roles, usuarios y permisos. |
+| 07 | `07_pruebas.sql` | Pruebas de todos los componentes. |
+
+El detalle de cada trigger, con su descripción, justificación y tabla de retornos, está en el [documento de triggers](Entregas/2da-Entrega/Triggers%20Documento.v2.pdf). El plan completo de implementación, con consultas, vistas, permisos, poblado y testing, está en el [plan de implementación](Entregas/3er-entrega/Plan%20de%20Implementaci%C3%B3n%20de%20la%20Base%20de%20Datos%20del%20Sistema%20de%20Justicia.v2.pdf).
 
 ---
 
 ## Consultas a resolver
 
-La propuesta plantea seis consultas que serán resueltas mediante vistas, funciones o procedimientos almacenados:
+La propuesta plantea seis consultas que se resuelven mediante vistas, funciones o el procedimiento almacenado:
 
 | N.º | Consulta |
 |---|---|
@@ -151,23 +159,6 @@ La propuesta plantea seis consultas que serán resueltas mediante vistas, funcio
 | **D** | Mostrar la cantidad de personas en prisión domiciliaria a la fecha actual de consulta. |
 | **E** | Mostrar las personas que hayan sido condenadas y sobreseídas (ambas) en algún momento. |
 | **F** | Mostrar todas las condenas vencidas donde haya habido más de 3 traslados de unidad carcelaria. |
-
----
-
-## Hoja de ruta
-
-- [x] Modelo lógico (diagrama de clases)
-- [x] Modelo relacional normalizado (3FN)
-- [x] Diccionario de datos
-- [x] Diseño y documentación de triggers
-- [ ] Plan de la sección 3 (consultas, vistas, SP/funciones, usuarios, poblado y testing)
-- [ ] Script de creación de la base de datos
-- [ ] Script de triggers
-- [ ] Script de carga de datos (al menos 15 filas por tabla)
-- [ ] Script de vistas (mínimo 3)
-- [ ] Funciones y procedimientos (mínimo 4)
-- [ ] Usuarios y permisos (mínimo 2 niveles)
-- [ ] Script de pruebas de triggers y funciones
 
 ---
 
@@ -186,3 +177,9 @@ La propuesta plantea seis consultas que serán resueltas mediante vistas, funcio
 - Sosa Mariano
 - Sotelo Benjamín
 - Loker Lisandro
+
+**Docentes**
+
+- Ing. Esteban Schab
+- Gabriel Casares
+- Tomas Viñuela
