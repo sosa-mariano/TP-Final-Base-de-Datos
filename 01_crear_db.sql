@@ -27,6 +27,7 @@ CREATE DATABASE sistema_justicia
 COMMENT ON DATABASE sistema_justicia IS
     'Sistema de Justicia: administración de causas judiciales, acusados, condenas y unidades carcelarias. TP Final de Base de Datos, UADER 2026.';
 
+
 -- Se crea el ENUM "T_Nacionalidad" con los siguientes valores:
 -- ('Argentino', 'Paraguayo', 'Uruguayo', 'Brasilero', 'Chileno', 'Boliviano');
 
@@ -65,3 +66,17 @@ CREATE TYPE T_Modalidad AS ENUM
 
 CREATE TYPE T_TipoModificacion AS ENUM
 ('Extension', 'Reduccion', 'Traslado');
+
+-- Se crea la tabla "duenioDomicilio" a continuación:
+CREATE TABLE duenioDomicilio (
+id_duenio_domicilio INTEGER NOT NULL,
+fecha_inicio DATE NOT NULL,
+fecha_fin DATE,
+dni INTEGER NOT NULL,
+id_domicilio INTEGER NOT NULL,
+
+PRIMARY KEY (id_duenio_domicilio),
+FOREIGN KEY (dni) REFERENCES Persona(dni),
+FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio)
+CONSTRAINT ck_duenio_periodo CHECK (fecha_fin >= fecha_inicio)
+);
