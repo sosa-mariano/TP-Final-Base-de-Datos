@@ -65,3 +65,31 @@ CREATE TYPE T_Modalidad AS ENUM
 
 CREATE TYPE T_TipoModificacion AS ENUM
 ('Extension', 'Reduccion', 'Traslado');
+
+---========= CREACION DE TABLAS =================
+
+CREATE TABLE domicilio (
+    id_domicilio  INTEGER,
+    calle         VARCHAR(100) NOT NULL,
+    numero        VARCHAR(10)  NOT NULL,
+    piso          VARCHAR(10),
+    departamento  VARCHAR(10),
+    localidad     VARCHAR(100) NOT NULL,
+    provincia     VARCHAR(50)  NOT NULL,
+    codigo_postal VARCHAR(8)   NOT NULL,
+    PRIMARY KEY (id_domicilio)
+);
+
+CREATE TABLE persona (
+    dni                    INTEGER,
+    nombres                VARCHAR(100)     NOT NULL,
+    apellidos              VARCHAR(100)     NOT NULL,
+    fecha_nacimiento       DATE             NOT NULL,
+    nacionalidad           T_Nacionalidad   NOT NULL,
+    estado_civil           T_EstadoCivil    NOT NULL,
+    nivel_educacion        T_NivelEducacion NOT NULL,
+    profesion              VARCHAR(100)     NOT NULL,
+    id_domicilio_principal INTEGER,
+    PRIMARY KEY (dni),
+    FOREIGN KEY (id_domicilio_principal) REFERENCES domicilio(id_domicilio)
+);
