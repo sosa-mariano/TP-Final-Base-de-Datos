@@ -93,3 +93,37 @@ CREATE TABLE persona (
     PRIMARY KEY (dni),
     FOREIGN KEY (id_domicilio_principal) REFERENCES domicilio(id_domicilio)
 );
+
+-- Aca va Familiar
+
+-- Aca va duenioDomicilio
+
+-- Aca va Juez
+
+-- Aca va Secretaria
+
+-- Aca va Secretario
+
+CREATE TABLE fiscalia (
+    id_fiscalia   INTEGER,
+    nombre        VARCHAR(100) NOT NULL,
+    id_domicilio  INTEGER      NOT NULL,
+    dni_encargado INTEGER,
+    PRIMARY KEY (id_fiscalia),
+    FOREIGN KEY (id_domicilio)  REFERENCES domicilio(id_domicilio),
+    FOREIGN KEY (dni_encargado) REFERENCES persona(dni)
+);
+
+-- Aca va UnidadCarcelaria
+
+-- Aca va CausaJudicial
+
+-- Aca va Acusado
+
+-- Aca va historialEstadoAcusado
+
+-- Aca va Condena
+
+-- Aca va modificacionCondena
+
+--
