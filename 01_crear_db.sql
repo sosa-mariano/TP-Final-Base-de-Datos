@@ -65,3 +65,85 @@ CREATE TYPE T_Modalidad AS ENUM
 
 CREATE TYPE T_TipoModificacion AS ENUM
 ('Extension', 'Reduccion', 'Traslado');
+
+---========= CREACION DE TABLAS =================
+
+CREATE TABLE domicilio (
+    id_domicilio  INTEGER,
+    calle         VARCHAR(100) NOT NULL,
+    numero        VARCHAR(10)  NOT NULL,
+    piso          VARCHAR(10),
+    departamento  VARCHAR(10),
+    localidad     VARCHAR(100) NOT NULL,
+    provincia     VARCHAR(50)  NOT NULL,
+    codigo_postal VARCHAR(8)   NOT NULL,
+    PRIMARY KEY (id_domicilio)
+);
+
+CREATE TABLE persona (
+    dni                    INTEGER,
+    nombres                VARCHAR(100)     NOT NULL,
+    apellidos              VARCHAR(100)     NOT NULL,
+    fecha_nacimiento       DATE             NOT NULL,
+    nacionalidad           T_Nacionalidad   NOT NULL,
+    estado_civil           T_EstadoCivil    NOT NULL,
+    nivel_educacion        T_NivelEducacion NOT NULL,
+    profesion              VARCHAR(100)     NOT NULL,
+    id_domicilio_principal INTEGER,
+    PRIMARY KEY (dni),
+    FOREIGN KEY (id_domicilio_principal) REFERENCES domicilio(id_domicilio)
+);
+
+-- Aca va Familiar
+
+CREATE TABLE duenioDomicilio (
+id_duenio_domicilio INTEGER NOT NULL,
+fecha_inicio DATE NOT NULL,
+fecha_fin DATE,
+dni INTEGER NOT NULL,
+id_domicilio INTEGER NOT NULL,
+
+PRIMARY KEY (id_duenio_domicilio),
+FOREIGN KEY (dni) REFERENCES Persona(dni),
+FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio),
+CONSTRAINT ck_duenio_periodo CHECK (fecha_fin >= fecha_inicio)
+);
+
+-- Aca va Juez
+
+CREATE TABLE secretaria (
+id_secretaria INTEGER NOT NULL,
+nombre VARCHAR(100) NOT NULL,
+id_domicilio INTEGER NOT NULL,
+dni_encargado INTEGER NOT NULL,
+
+PRIMARY KEY (id_secretaria),
+FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio),
+FOREIGN KEY (dni_encargado) REFERENCES Persona(dni)
+);
+
+-- Aca va Secretario
+
+CREATE TABLE fiscalia (
+    id_fiscalia   INTEGER,
+    nombre        VARCHAR(100) NOT NULL,
+    id_domicilio  INTEGER      NOT NULL,
+    dni_encargado INTEGER,
+    PRIMARY KEY (id_fiscalia),
+    FOREIGN KEY (id_domicilio)  REFERENCES domicilio(id_domicilio),
+    FOREIGN KEY (dni_encargado) REFERENCES persona(dni)
+);
+
+-- Aca va UnidadCarcelaria
+
+-- Aca va CausaJudicial
+
+-- Aca va Acusado
+
+-- Aca va historialEstadoAcusado
+
+-- Aca va Condena
+
+-- Aca va modificacionCondena
+
+--
