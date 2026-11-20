@@ -134,7 +134,14 @@ CREATE TABLE fiscalia (
     FOREIGN KEY (dni_encargado) REFERENCES persona(dni)
 );
 
--- Aca va UnidadCarcelaria
+CREATE TABLE unidadCarcelaria (
+id_unidad INTEGER NOT NULL,
+nombre VARCHAR(100) NOT NULL,
+id_domicilio INTEGER NOT NULL,
+
+PRIMARY KEY (id_unidad),
+FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio)
+);
 
 -- Aca va CausaJudicial
 
