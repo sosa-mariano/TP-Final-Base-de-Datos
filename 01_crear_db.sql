@@ -99,6 +99,8 @@ CREATE TABLE familiar (
     dni_familiar  VARCHAR(15) NOT NULL,
     parentesco    T_Parentesco NOT NULL,
     PRIMARY KEY (dni_persona, dni_familiar),
+    FOREIGN KEY (dni_persona)  REFERENCES persona(dni),
+    FOREIGN KEY (dni_familiar) REFERENCES persona(dni),
     CONSTRAINT ck_familiar_distintos CHECK (dni_persona <> dni_familiar)
 );
 
