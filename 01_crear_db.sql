@@ -96,7 +96,18 @@ CREATE TABLE persona (
 
 -- Aca va Familiar
 
--- Aca va duenioDomicilio
+CREATE TABLE duenioDomicilio (
+id_duenio_domicilio INTEGER NOT NULL,
+fecha_inicio DATE NOT NULL,
+fecha_fin DATE,
+dni INTEGER NOT NULL,
+id_domicilio INTEGER NOT NULL,
+
+PRIMARY KEY (id_duenio_domicilio),
+FOREIGN KEY (dni) REFERENCES Persona(dni),
+FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio),
+CONSTRAINT ck_duenio_periodo CHECK (fecha_fin >= fecha_inicio)
+);
 
 -- Aca va Juez
 
