@@ -111,7 +111,16 @@ CONSTRAINT ck_duenio_periodo CHECK (fecha_fin >= fecha_inicio)
 
 -- Aca va Juez
 
--- Aca va Secretaria
+CREATE TABLE secretaria (
+id_secretaria INTEGER NOT NULL,
+nombre VARCHAR(100) NOT NULL,
+id_domicilio INTEGER NOT NULL,
+dni_encargado INTEGER NOT NULL,
+
+PRIMARY KEY (id_secretaria),
+FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio),
+FOREIGN KEY (dni_encargado) REFERENCES Persona(dni)
+);
 
 -- Aca va Secretario
 
