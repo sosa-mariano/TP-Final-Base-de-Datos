@@ -94,7 +94,12 @@ CREATE TABLE persona (
     FOREIGN KEY (id_domicilio_principal) REFERENCES domicilio(id_domicilio)
 );
 
--- Aca va Familiar
+CREATE TABLE familiar (
+    dni_persona   VARCHAR(15) NOT NULL,
+    dni_familiar  VARCHAR(15) NOT NULL,
+    parentesco    T_Parentesco NOT NULL,
+    CONSTRAINT ck_familiar_distintos CHECK (dni_persona <> dni_familiar)
+);
 
 CREATE TABLE duenioDomicilio (
 id_duenio_domicilio INTEGER NOT NULL,
