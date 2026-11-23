@@ -117,7 +117,11 @@ FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio),
 CONSTRAINT ck_duenio_periodo CHECK (fecha_fin >= fecha_inicio)
 );
 
--- Aca va Juez
+CREATE TABLE juez (
+    dni INTEGER NOT NULL,
+    PRIMARY KEY (dni),
+    FOREIGN KEY (dni) REFERENCES persona(dni)
+);
 
 CREATE TABLE secretaria (
 id_secretaria INTEGER NOT NULL,
