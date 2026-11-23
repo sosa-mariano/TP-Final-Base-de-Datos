@@ -242,6 +242,35 @@ CREATE TABLE condena (
     )
 );
 
--- Aca va modificacionCondena
+CREATE TABLE modificacionCondena (
+    id_modificacion      INTEGER,
+    tipo                 T_TipoModificacion NOT NULL,
+    fecha                DATE               NOT NULL,
+    razon                TEXT               NOT NULL,
+    duracion_nueva_meses SMALLINT           NOT NULL,
+    id_condena           INTEGER            NOT NULL,
+    id_unidad            INTEGER,
+    id_domicilio         INTEGER,
+    PRIMARY KEY (id_modificacion),
+    FOREIGN KEY (id_condena)   REFERENCES condena(id_condena),
+    FOREIGN KEY (id_unidad)    REFERENCES unidadCarcelaria(id_unidad),
+    FOREIGN KEY (id_domicilio) REFERENCES domicilio(id_domicilio),
 
---
+    -- La duracion vigente tras la modificacion debe ser positiva
+    CONSTRAINT ck_modif_duracion CHECK (duracion_nueva_meses > 0),
+
+    -- La razon no puede ser vacia ni contener solo espacios
+    CONSTRAINT ck_modif_razon CHECK (btrim(razon) <> ''),
+
+    -- Destino segun el tipo:
+    --   Extension / Reduccion -> id_unidad e id_domicilio nulos
+    --   Traslado              -> exactamente uno de los dos informado
+	CONSTRAINT ck_modif_destino CHECK (
+		(tipo IN ('Extension', 'Reduccion')
+			AND id_unidad IS NULL AND id_domicilio IS NULL)
+		OR
+		(tipo = 'Traslado' AND id_unidad    IS NOT NULL AND id_domicilio IS NULL)
+		OR
+		(tipo = 'Traslado' AND id_domicilio IS NOT NULL AND id_unidad    IS NULL)
+	)
+);
