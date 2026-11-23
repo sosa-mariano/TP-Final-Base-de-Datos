@@ -162,7 +162,21 @@ CREATE TABLE unidadCarcelaria (
 	CONSTRAINT uq_unidad_domicilio UNIQUE (id_domicilio)
 );
 
--- Aca va CausaJudicial
+CREATE TABLE causaJudicial (
+	numero_registro INTEGER,
+	caratula VARCHAR(255) NOT NULL,
+	fecha_alta DATE NOT NULL,
+	fecha_resolucion DATE,
+	dni_juez INTEGER NOT NULL,
+	dni_secretario INTEGER NOT NULL,
+	id_fiscalia INTEGER NOT NULL,
+	id_secretaria INTEGER NOT NULL,
+	PRIMARY KEY (numero_registro),
+	FOREIGN KEY (dni_juez) REFERENCES juez(dni),
+	FOREIGN KEY (dni_secretario) REFERENCES secretario(dni),
+	FOREIGN KEY (id_fiscalia) REFERENCES fiscalia(id_fiscalia),
+	FOREIGN KEY (id_secretaria) REFERENCES secretaria(id_secretaria)
+);
 
 -- Aca va Acusado
 
