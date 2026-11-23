@@ -27,6 +27,8 @@ CREATE DATABASE sistema_justicia
 COMMENT ON DATABASE sistema_justicia IS
     'Sistema de Justicia: administración de causas judiciales, acusados, condenas y unidades carcelarias. TP Final de Base de Datos, UADER 2026.';
 
+---========= CREACION DE ENUMS =================
+
 -- Se crea el ENUM "T_Nacionalidad" con los siguientes valores:
 -- ('Argentino', 'Paraguayo', 'Uruguayo', 'Brasilero', 'Chileno', 'Boliviano');
 
@@ -94,35 +96,52 @@ CREATE TABLE persona (
     FOREIGN KEY (id_domicilio_principal) REFERENCES domicilio(id_domicilio)
 );
 
--- Aca va Familiar
+CREATE TABLE familiar (
+    dni_persona   INTEGER NOT NULL,
+    dni_familiar  INTEGER NOT NULL,
+    parentesco    T_Parentesco NOT NULL,
+    PRIMARY KEY (dni_persona, dni_familiar),
+    FOREIGN KEY (dni_persona)  REFERENCES persona(dni),
+    FOREIGN KEY (dni_familiar) REFERENCES persona(dni),
+    CONSTRAINT ck_familiar_distintos CHECK (dni_persona <> dni_familiar)
+);
 
 CREATE TABLE duenioDomicilio (
-id_duenio_domicilio INTEGER NOT NULL,
-fecha_inicio DATE NOT NULL,
-fecha_fin DATE,
-dni INTEGER NOT NULL,
-id_domicilio INTEGER NOT NULL,
+	id_duenio_domicilio INTEGER NOT NULL,
+	fecha_inicio DATE NOT NULL,
+	fecha_fin DATE,
+	dni INTEGER NOT NULL,
+	id_domicilio INTEGER NOT NULL,
 
-PRIMARY KEY (id_duenio_domicilio),
-FOREIGN KEY (dni) REFERENCES Persona(dni),
-FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio),
-CONSTRAINT ck_duenio_periodo CHECK (fecha_fin >= fecha_inicio)
+	PRIMARY KEY (id_duenio_domicilio),
+	FOREIGN KEY (dni) REFERENCES Persona(dni),
+	FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio),
+	CONSTRAINT ck_duenio_periodo CHECK (fecha_fin >= fecha_inicio)
 );
 
--- Aca va Juez
+CREATE TABLE juez (
+    dni INTEGER NOT NULL,
+    PRIMARY KEY (dni),
+    FOREIGN KEY (dni) REFERENCES persona(dni)
+);
 
 CREATE TABLE secretaria (
-id_secretaria INTEGER NOT NULL,
-nombre VARCHAR(100) NOT NULL,
-id_domicilio INTEGER NOT NULL,
-dni_encargado INTEGER NOT NULL,
-
-PRIMARY KEY (id_secretaria),
-FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio),
-FOREIGN KEY (dni_encargado) REFERENCES Persona(dni)
+	id_secretaria INTEGER NOT NULL,
+	nombre VARCHAR(100) NOT NULL,
+	id_domicilio INTEGER NOT NULL,
+	dni_encargado INTEGER NOT NULL,
+	PRIMARY KEY (id_secretaria),
+	FOREIGN KEY (id_domicilio) REFERENCES domicilio(id_domicilio),
+	FOREIGN KEY (dni_encargado) REFERENCES persona(dni)
 );
 
--- Aca va Secretario
+CREATE TABLE secretario (
+    dni INTEGER NOT NULL,
+    id_secretaria INTEGER NOT NULL,
+    PRIMARY KEY (dni),
+    FOREIGN KEY (dni) REFERENCES persona(dni),
+    FOREIGN KEY (id_secretaria) REFERENCES secretaria(id_secretaria)
+);
 
 CREATE TABLE fiscalia (
     id_fiscalia   INTEGER,
@@ -135,15 +154,29 @@ CREATE TABLE fiscalia (
 );
 
 CREATE TABLE unidadCarcelaria (
-id_unidad INTEGER NOT NULL,
-nombre VARCHAR(100) NOT NULL,
-id_domicilio INTEGER NOT NULL,
-
-PRIMARY KEY (id_unidad),
-FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio)
+	id_unidad INTEGER NOT NULL,
+	nombre VARCHAR(100) NOT NULL,
+	id_domicilio INTEGER NOT NULL,
+	PRIMARY KEY (id_unidad),
+	FOREIGN KEY (id_domicilio) REFERENCES domicilio(id_domicilio),
+	CONSTRAINT uq_unidad_domicilio UNIQUE (id_domicilio)
 );
 
--- Aca va CausaJudicial
+CREATE TABLE causaJudicial (
+	numero_registro INTEGER,
+	caratula VARCHAR(255) NOT NULL,
+	fecha_alta DATE NOT NULL,
+	fecha_resolucion DATE,
+	dni_juez INTEGER NOT NULL,
+	dni_secretario INTEGER NOT NULL,
+	id_fiscalia INTEGER NOT NULL,
+	id_secretaria INTEGER NOT NULL,
+	PRIMARY KEY (numero_registro),
+	FOREIGN KEY (dni_juez) REFERENCES juez(dni),
+	FOREIGN KEY (dni_secretario) REFERENCES secretario(dni),
+	FOREIGN KEY (id_fiscalia) REFERENCES fiscalia(id_fiscalia),
+	FOREIGN KEY (id_secretaria) REFERENCES secretaria(id_secretaria)
+);
 
 -- Aca va Acusado
 
