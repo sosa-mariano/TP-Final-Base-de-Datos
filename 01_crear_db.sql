@@ -198,7 +198,49 @@ CREATE TABLE historialEstadoAcusado (
     FOREIGN KEY (id_acusado) REFERENCES acusado(id_acusado)
 );
 
--- Aca va Condena
+CREATE TABLE condena (
+    id_condena     INTEGER,
+    modalidad      T_Modalidad  NOT NULL,
+    duracion_meses SMALLINT     NOT NULL,
+    fecha_inicio   DATE         NOT NULL,
+    fecha_fin      DATE         NOT NULL,
+    fecha_baja     DATE,
+    motivo_baja    VARCHAR(255),
+    id_acusado     INTEGER      NOT NULL,
+    id_unidad      INTEGER,
+    id_domicilio   INTEGER,
+    PRIMARY KEY (id_condena),
+    FOREIGN KEY (id_acusado)   REFERENCES acusado(id_acusado),
+    FOREIGN KEY (id_unidad)    REFERENCES unidadCarcelaria(id_unidad),
+    FOREIGN KEY (id_domicilio) REFERENCES domicilio(id_domicilio),
+
+    -- La duracion debe ser positiva
+    CONSTRAINT ck_condena_duracion CHECK (duracion_meses > 0),
+
+    -- fecha_fin conserva el valor ORIGINAL: fecha_inicio + duracion_meses meses
+    CONSTRAINT ck_condena_fecha_fin CHECK (
+        fecha_fin = (fecha_inicio + duracion_meses * INTERVAL '1 month')::date
+    ),
+
+    -- La baja (libertad) lleva fecha y motivo juntos: ambos nulos o ambos informados
+    CONSTRAINT ck_condena_baja_completa CHECK (
+        (fecha_baja IS NULL) = (motivo_baja IS NULL)
+    ),
+
+    -- La baja, si existe, no puede ser anterior al inicio de la condena
+    CONSTRAINT ck_condena_baja_fecha CHECK (
+        fecha_baja IS NULL OR fecha_baja >= fecha_inicio
+    ),
+
+    -- Destino segun modalidad:
+    --   Unidad       -> id_unidad informado e id_domicilio nulo
+    --   Domiciliaria -> id_domicilio informado e id_unidad nulo
+    CONSTRAINT ck_condena_destino CHECK (
+        (modalidad = 'Unidad'       AND id_unidad    IS NOT NULL AND id_domicilio IS NULL)
+        OR
+        (modalidad = 'Domiciliaria' AND id_domicilio IS NOT NULL AND id_unidad    IS NULL)
+    )
+);
 
 -- Aca va modificacionCondena
 
