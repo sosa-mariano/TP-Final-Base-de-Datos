@@ -95,8 +95,8 @@ CREATE TABLE persona (
 );
 
 CREATE TABLE familiar (
-    dni_persona   INTEGER      NOT NULL,
-    dni_familiar  INTEGER      NOT NULL,
+    dni_persona   INTEGER NOT NULL,
+    dni_familiar  INTEGER NOT NULL,
     parentesco    T_Parentesco NOT NULL,
     PRIMARY KEY (dni_persona, dni_familiar),
     FOREIGN KEY (dni_persona)  REFERENCES persona(dni),
@@ -146,7 +146,14 @@ CREATE TABLE fiscalia (
     FOREIGN KEY (dni_encargado) REFERENCES persona(dni)
 );
 
--- Aca va UnidadCarcelaria
+CREATE TABLE unidadCarcelaria (
+id_unidad INTEGER NOT NULL,
+nombre VARCHAR(100) NOT NULL,
+id_domicilio INTEGER NOT NULL,
+
+PRIMARY KEY (id_unidad),
+FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio)
+);
 
 -- Aca va CausaJudicial
 
