@@ -178,7 +178,16 @@ CREATE TABLE causaJudicial (
 	FOREIGN KEY (id_secretaria) REFERENCES secretaria(id_secretaria)
 );
 
--- Aca va Acusado
+CREATE TABLE acusado (
+	id_acusado INTEGER,
+	fecha_resolucion DATE,
+	dni INTEGER NOT NULL,
+	numero_registro INTEGER NOT NULL,
+	PRIMARY KEY (id_acusado),
+	FOREIGN KEY (dni) REFERENCES persona(dni),
+	FOREIGN KEY (numero_registro) REFERENCES(causaJudicial),
+	CONSTRAINT uq_acusado_dni_causa UNIQUE (dni, numero_registro)
+);
 
 CREATE TABLE historialEstadoAcusado (
     id_estado_acusado INTEGER,
