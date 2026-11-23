@@ -134,7 +134,13 @@ FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio),
 FOREIGN KEY (dni_encargado) REFERENCES Persona(dni)
 );
 
--- Aca va Secretario
+CREATE TABLE secretario (
+    dni INTEGER NOT NULL,
+    id_secretaria INTEGER NOT NULL,
+    PRIMARY KEY (dni),
+    FOREIGN KEY (dni) REFERENCES persona(dni),
+    FOREIGN KEY (id_secretaria) REFERENCES secretaria(id_secretaria)
+);
 
 CREATE TABLE fiscalia (
     id_fiscalia   INTEGER,
