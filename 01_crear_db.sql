@@ -95,8 +95,8 @@ CREATE TABLE persona (
 );
 
 CREATE TABLE familiar (
-    dni_persona   VARCHAR(15) NOT NULL,
-    dni_familiar  VARCHAR(15) NOT NULL,
+    dni_persona   INTEGER NOT NULL,
+    dni_familiar  INTEGER NOT NULL,
     parentesco    T_Parentesco NOT NULL,
     PRIMARY KEY (dni_persona, dni_familiar),
     FOREIGN KEY (dni_persona)  REFERENCES persona(dni),
