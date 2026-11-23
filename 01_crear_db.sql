@@ -166,7 +166,14 @@ CREATE TABLE unidadCarcelaria (
 
 -- Aca va Acusado
 
--- Aca va historialEstadoAcusado
+CREATE TABLE historialEstadoAcusado (
+    id_estado_acusado INTEGER,
+    estado T_EstadoAcusado NOT NULL,
+	fecha_cambio DATE NOT NULL,
+    id_acusado INTEGER NOT NULL,
+    PRIMARY KEY (id_estado_acusado),
+    FOREIGN KEY (id_acusado) REFERENCES acusado(id_acusado)
+);
 
 -- Aca va Condena
 
