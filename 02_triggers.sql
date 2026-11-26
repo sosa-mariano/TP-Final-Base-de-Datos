@@ -97,5 +97,57 @@ CREATE TRIGGER trg_validar_transicion_estado
     FOR EACH ROW
     EXECUTE FUNCTION fn_trg_validar_transicion_estado();
 
+-- =============================================================================
+-- 2. trg_cerrar_resolucion
+-- =============================================================================
+--Creacion de la funcion que dispara el trigger.
+CREATE OR REPLACE FUNCTION fn_trg_cerrar_resolucion()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_numero_registro INTEGER;
+BEGIN
+ 	-- Indagado / Procesado: no son estados de resolucion, no se toca nada
+    IF NEW.estado NOT IN ('Condenado', 'Sobreseido') THEN
+        RETURN NULL;
+    END IF;
 
+    -- 1) Resolucion del acusado: queda con la fecha del estado final.
+    --    Primero buscamos a que causa pertenece el acusado.
+    SELECT numero_registro
+      INTO v_numero_registro
+      FROM acusado
+     WHERE id_acusado = NEW.id_acusado;
 
+    UPDATE acusado
+       SET fecha_resolucion = NEW.fecha_cambio
+     WHERE id_acusado = NEW.id_acusado;
+
+    -- 2) Resolucion de la causa: solo si no quedan acusados sin resolver
+    --    (contamos los acusados de la causa que todavia no tienen fecha)
+    IF (SELECT COUNT(*)
+          FROM acusado
+         WHERE numero_registro = v_numero_registro
+           AND fecha_resolucion IS NULL) = 0 THEN
+
+        -- La causa se cierra con la fecha mas reciente de sus acusados
+        UPDATE causaJudicial
+           SET fecha_resolucion = (SELECT MAX(fecha_resolucion)
+                                     FROM acusado
+                                    WHERE numero_registro = v_numero_registro)
+         WHERE numero_registro = v_numero_registro
+           AND fecha_resolucion IS NULL;   -- no sobrescribe una resolucion previa
+    END IF;
+
+    -- En un trigger AFTER el valor retornado se ignora
+    RETURN NULL;
+
+END;
+$$;
+
+--Declaracion del trigger sobre la tabla.
+CREATE TRIGGER trg_cerrar_resolucion
+    AFTER INSERT ON historialEstadoAcusado
+    FOR EACH ROW
+    EXECUTE FUNCTION fn_trg_cerrar_resolucion();
