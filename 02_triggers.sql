@@ -151,3 +151,77 @@ CREATE TRIGGER trg_cerrar_resolucion
     AFTER INSERT ON historialEstadoAcusado
     FOR EACH ROW
     EXECUTE FUNCTION fn_trg_cerrar_resolucion();
+
+
+-- =============================================================================
+-- 3. trg_proteger_condena
+-- =============================================================================
+-- Creacion de la funcion que dispara el trigger.
+
+CREATE OR REPLACE FUNCTION fn_trg_proteger_condena()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- DELETE: no se permite eliminar condenas
+    IF TG_OP = 'DELETE' THEN
+        RAISE EXCEPTION
+            'No se permite eliminar la condena %: debe registrarse su baja',
+            OLD.id_condena;
+    END IF;
+
+    -- UPDATE: solo se admite registrar la baja (fecha_baja y motivo_baja)
+    -- y conservar la fecha_fin original (y demas datos de la condena)
+    IF TG_OP = 'UPDATE' THEN
+        IF NEW.id_condena IS DISTINCT FROM OLD.id_condena
+           OR NEW.modalidad IS DISTINCT FROM OLD.modalidad
+           OR NEW.duracion_meses IS DISTINCT FROM OLD.duracion_meses
+           OR NEW.fecha_inicio IS DISTINCT FROM OLD.fecha_inicio
+           OR NEW.fecha_fin IS DISTINCT FROM OLD.fecha_fin
+           OR NEW.id_acusado IS DISTINCT FROM OLD.id_acusado
+           OR NEW.id_unidad IS DISTINCT FROM OLD.id_unidad
+           OR NEW.id_domicilio IS DISTINCT FROM OLD.id_domicilio THEN
+            RAISE EXCEPTION
+                'La condena % solo admite su baja (fecha_baja y motivo_baja) y debe conservar su fecha de fin original (%)',
+                OLD.id_condena, OLD.fecha_fin;
+        END IF;
+
+        -- Si ya tenia baja registrada, no se permite modificarla ni quitarla
+        IF OLD.fecha_baja IS NOT NULL OR OLD.motivo_baja IS NOT NULL THEN
+            IF NEW.fecha_baja IS DISTINCT FROM OLD.fecha_baja
+               OR NEW.motivo_baja IS DISTINCT FROM OLD.motivo_baja THEN
+                RAISE EXCEPTION
+                    'La condena % ya tiene baja registrada y no puede modificarse',
+                    OLD.id_condena;
+            END IF;
+        END IF;
+
+        -- Respaldo de validaciones de baja completa y fecha de baja no anterior al inicio
+        IF (NEW.fecha_baja IS NULL) <> (NEW.motivo_baja IS NULL) THEN
+            RAISE EXCEPTION
+                'La baja de la condena % debe informar fecha_baja y motivo_baja completos',
+                OLD.id_condena;
+        END IF;
+
+        IF NEW.motivo_baja IS NOT NULL AND btrim(NEW.motivo_baja) = '' THEN
+            RAISE EXCEPTION
+                'El motivo_baja de la condena % no puede estar vacio',
+                OLD.id_condena;
+        END IF;
+
+        IF NEW.fecha_baja IS NOT NULL AND NEW.fecha_baja < NEW.fecha_inicio THEN
+            RAISE EXCEPTION
+                'La fecha_baja (%) de la condena % no puede ser anterior a fecha_inicio (%)',
+                NEW.fecha_baja, OLD.id_condena, NEW.fecha_inicio;
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+-- Declaracion del trigger sobre la tabla.
+CREATE TRIGGER trg_proteger_condena
+    BEFORE UPDATE OR DELETE ON condena
+    FOR EACH ROW
+    EXECUTE FUNCTION fn_trg_proteger_condena();
