@@ -151,3 +151,69 @@ CREATE TRIGGER trg_cerrar_resolucion
     AFTER INSERT ON historialEstadoAcusado
     FOR EACH ROW
     EXECUTE FUNCTION fn_trg_cerrar_resolucion();
+
+-- =============================================================================
+-- 3. trg_validar_acusado
+-- =============================================================================
+
+--Creacion de la funcion que dispara el trigger.
+CREATE OR REPLACE FUNCTION fn_trg_validar_acusado()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_dni_juez        INTEGER;
+    v_dni_secretario  INTEGER;
+    v_fecha_res       DATE;
+    v_id_estado       INTEGER;
+BEGIN
+    -- Obtenemos juez, secretario y fecha de resolucion de la causa asociada
+    SELECT c.dni_juez, c.dni_secretario, c.fecha_resolucion
+      INTO v_dni_juez, v_dni_secretario, v_fecha_res
+      FROM causaJudicial c
+     WHERE c.numero_registro = NEW.numero_registro;
+
+    -- 1) Validacion de roles: el juez y el secretario no pueden ser acusados en su causa
+    IF NEW.dni = v_dni_juez THEN
+        RAISE EXCEPTION
+            'El juez (DNI %) no puede ser acusado en la causa %',
+            NEW.dni, NEW.numero_registro;
+    END IF;
+
+    IF NEW.dni = v_dni_secretario THEN
+        RAISE EXCEPTION
+            'El secretario (DNI %) no puede ser acusado en la causa %',
+            NEW.dni, NEW.numero_registro;
+    END IF;
+
+    -- 2) Regla del plan (9.6): no se admiten nuevos acusados en una causa ya resuelta.
+    --    En UPDATE solo se controla si se cambia la causa o el DNI, para permitir
+    --    que trg_cerrar_resolucion actualice fecha_resolucion sin bloqueos.
+    IF v_fecha_res IS NOT NULL
+       AND (TG_OP = 'INSERT' OR NEW.numero_registro <> OLD.numero_registro OR NEW.dni <> OLD.dni) THEN
+        RAISE EXCEPTION
+            'La causa % ya esta resuelta (%): no se admiten nuevos acusados',
+            NEW.numero_registro, v_fecha_res;
+    END IF;
+
+    -- 3) Alta de acusado: registrar estado inicial Indagado en historialEstadoAcusado
+    IF TG_OP = 'INSERT' THEN
+        SELECT COALESCE(MAX(id_estado_acusado), 0) + 1
+          INTO v_id_estado
+          FROM historialEstadoAcusado;
+
+        -- Nota: cambiar CURRENT_DATE por c.fecha_alta si cargan causas con fechas pasadas
+        INSERT INTO historialEstadoAcusado (id_estado_acusado, estado, fecha_cambio, id_acusado)
+        VALUES (v_id_estado, 'Indagado', CURRENT_DATE, NEW.id_acusado);
+    END IF;
+
+    -- En un trigger AFTER el valor retornado se ignora
+    RETURN NULL;
+END;
+$$;
+
+--Declaracion del trigger sobre la tabla.
+CREATE TRIGGER trg_validar_acusado
+    AFTER INSERT OR UPDATE ON acusado
+    FOR EACH ROW
+    EXECUTE FUNCTION fn_trg_validar_acusado();
