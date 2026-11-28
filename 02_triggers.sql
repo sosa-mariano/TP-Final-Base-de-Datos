@@ -225,3 +225,72 @@ CREATE TRIGGER trg_proteger_condena
     BEFORE UPDATE OR DELETE ON condena
     FOR EACH ROW
     EXECUTE FUNCTION fn_trg_proteger_condena();
+
+-- =============================================================================
+-- 4. trg_validar_duenio_domicilio
+-- =============================================================================
+-- Creacion de la funcion que dispara el trigger.
+
+CREATE OR REPLACE FUNCTION fn_trg_validar_duenio_domicilio()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- DELETE: no se permite borrar periodos de titularidad
+    IF TG_OP = 'DELETE' THEN
+        RAISE EXCEPTION
+            'No se permite eliminar el registro de titularidad % del domicilio %',
+            OLD.id_duenio_domicilio, OLD.id_domicilio;
+    END IF;
+
+    -- UPDATE: no se permite reasignar periodos (ni cambiar id_duenio_domicilio,
+    -- dni, id_domicilio ni fecha_inicio); solo se admite cerrar o ajustar fecha_fin
+    IF TG_OP = 'UPDATE' THEN
+        IF NEW.id_duenio_domicilio IS DISTINCT FROM OLD.id_duenio_domicilio
+           OR NEW.dni IS DISTINCT FROM OLD.dni
+           OR NEW.id_domicilio IS DISTINCT FROM OLD.id_domicilio
+           OR NEW.fecha_inicio IS DISTINCT FROM OLD.fecha_inicio THEN
+            RAISE EXCEPTION
+                'No se permite reasignar ni modificar los datos base del periodo de titularidad %',
+                OLD.id_duenio_domicilio;
+        END IF;
+    END IF;
+
+    -- INSERT o UPDATE: validar que no haya un segundo duenio actual (fecha_fin IS NULL)
+    -- ni periodos superpuestos en el mismo domicilio
+    IF NEW.fecha_fin IS NULL THEN
+        IF EXISTS (
+            SELECT 1
+              FROM duenioDomicilio d
+             WHERE d.id_domicilio = NEW.id_domicilio
+               AND d.fecha_fin IS NULL
+               AND (TG_OP = 'INSERT' OR d.id_duenio_domicilio <> NEW.id_duenio_domicilio)
+        ) THEN
+            RAISE EXCEPTION
+                'El domicilio % ya posee un duenio actual sin fecha de fin',
+                NEW.id_domicilio;
+        END IF;
+    END IF;
+
+    IF EXISTS (
+        SELECT 1
+          FROM duenioDomicilio d
+         WHERE d.id_domicilio = NEW.id_domicilio
+           AND (TG_OP = 'INSERT' OR d.id_duenio_domicilio <> NEW.id_duenio_domicilio)
+           AND d.fecha_inicio <= COALESCE(NEW.fecha_fin, '9999-12-31'::date)
+           AND NEW.fecha_inicio <= COALESCE(d.fecha_fin, '9999-12-31'::date)
+    ) THEN
+        RAISE EXCEPTION
+            'El periodo [% .. %] se superpone con otro periodo existente en el domicilio %',
+            NEW.fecha_inicio, COALESCE(NEW.fecha_fin::text, 'actual'), NEW.id_domicilio;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+-- Declaracion del trigger sobre la tabla.
+CREATE TRIGGER trg_validar_duenio_domicilio
+    BEFORE INSERT OR UPDATE OR DELETE ON duenioDomicilio
+    FOR EACH ROW
+    EXECUTE FUNCTION fn_trg_validar_duenio_domicilio();
